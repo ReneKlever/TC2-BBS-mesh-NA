@@ -133,6 +133,7 @@ def initialize_config(config_file: str = None) -> dict[str, Any]:
         'port': port,
         'bbs_nodes': bbs_nodes,
         'allowed_nodes': allowed_nodes,
+        'allowed2bbs_nodes': allowed2bbs_nodes,
         'mqtt_topic': 'meshtastic.receive'
     }
 
