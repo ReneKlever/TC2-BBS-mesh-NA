@@ -200,7 +200,11 @@ def on_receive(packet, interface):
                 else:
                     logging.info("Ignoring non-sync message from known BBS node")
             elif to_id is not None and to_id != 0 and to_id != 255 and to_id == interface.myInfo.my_node_num:
-                process_message(sender_id, message_string, interface, is_sync_message=False)
+                allowed2bbs_nodes = interface.allowed2bbs_nodes
+                if allowed2bbs_nodes and sender_node_id not in allowed2bbs_nodes:
+                    logging.info(f"Node node_id: {sender_node_id} not allowed in this bbs")
+                else:
+                    process_message(sender_id, message_string, interface, is_sync_message=False)
             else:
                 logging.info("Ignoring message sent to group chat or from unknown node")
     except KeyError as e:
