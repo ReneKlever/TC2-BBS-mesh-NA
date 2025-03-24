@@ -61,17 +61,12 @@ def handle_help_command(sender_id, interface, menu_name=None):
             response = build_menu(bbs_menu_items, "📰BBS Menu📰")
         elif menu_name == 'utilities':
             response = build_menu(utilities_menu_items, "🛠️Utilities Menu🛠️")
-        send_message(response, sender_id, interface)
     else:
-        node_id = get_node_id_from_num(sender_id, interface)
-        allowed2bbs_nodes = interface.allowed2bbs_nodes
-        if allowed2bbs_nodes and node_id not in allowed2bbs_nodes:
-            logging.info(f"The node_id: {node_id} is not allowed to enter this bbs")  # Debug statement
-        elif update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1}):  # Reset to main menu state
-            mail = get_mail(get_node_id_from_num(sender_id, interface))
-            response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾 (✉️:{len(mail)})")
-            send_message(response, sender_id, interface)
-
+        update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1})  # Reset to main menu state
+        mail = get_mail(get_node_id_from_num(sender_id, interface))
+        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾 (✉️:{len(mail)})")
+    send_message(response, sender_id, interface)
+    
 def get_node_name(node_id, interface):
     node_info = interface.nodes.get(node_id)
     if node_info:
