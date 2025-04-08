@@ -7,7 +7,7 @@ from meshtastic import BROADCAST_NUM
 
 from db_operations import (
     add_bulletin, add_mail, delete_mail,
-    get_bulletin_content, get_bulletins,
+    get_bulletin_content, get_bulletins, get_hot_bulletin,
     get_mail, get_mail_content,
     add_channel, get_channels, get_sender_id_by_mail_id
 )
@@ -25,13 +25,13 @@ main_menu_items = config['menu']['main_menu_items'].split(',')
 bbs_menu_items = config['menu']['bbs_menu_items'].split(',')
 utilities_menu_items = config['menu']['utilities_menu_items'].split(',')
 
-def build_menu(items, menu_name, mails):
+def build_menu(items, menu_name, mails, date):
     menu_str = f"{menu_name}\n"
     for item in items:
         if item.strip() == 'Q':
             menu_str += "[Q]uick Commands\n"
         elif item.strip() == 'B':
-            menu_str += "[B]ulletins\n"
+            menu_str += "[B]ulletins (" + date + ")\n"
         elif item.strip() == 'U':
             menu_str += "[U]tilities\n"
         elif item.strip() == 'X':
@@ -60,7 +60,10 @@ def handle_help_command(sender_id, interface, menu_name=None):
     else:
         update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1})  # Reset to main menu state
         mails = len(get_mail(get_node_id_from_num(sender_id, interface)))
-        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾", mails)
+        date = str(get_hot_bulletin())
+        date = date[2:]
+        date = date[:-3]  
+        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾", mails, date)
     send_message(response, sender_id, interface)
     
 def get_node_name(node_id, interface):
