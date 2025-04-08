@@ -16,7 +16,7 @@ from utils import get_user_state, get_node_short_name, get_node_id_from_num, sen
 
 main_menu_handlers = {
     "m": handle_mail_command,
-    "b": lambda sender_id, interface: handle_help_command(sender_id, interface, 'bbs'),
+    "b": handle_bulletin_command,
     "c": handle_channel_directory_command,
     "u": lambda sender_id, interface: handle_help_command(sender_id, interface, 'utilities'),
     "q": handle_quick_help_command,
