@@ -50,8 +50,6 @@ def build_menu(items, menu_name, mails):
             menu_str += "[W]all of Shame\n"
     return menu_str
 
-
-
 def handle_help_command(sender_id, interface, menu_name=None):
     if menu_name:
         update_user_state(sender_id, {'command': 'MENU', 'menu': menu_name, 'step': 1})
