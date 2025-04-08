@@ -15,16 +15,16 @@ from js8call_integration import handle_js8call_command, handle_js8call_steps, ha
 from utils import get_user_state, get_node_short_name, get_node_id_from_num, send_message
 
 main_menu_handlers = {
-    "q": handle_quick_help_command,
+    "m": handle_mail_command,
     "b": lambda sender_id, interface: handle_help_command(sender_id, interface, 'bbs'),
+    "c": handle_channel_directory_command,
     "u": lambda sender_id, interface: handle_help_command(sender_id, interface, 'utilities'),
+    "q": handle_quick_help_command,
     "x": handle_help_command
 }
 
 bbs_menu_handlers = {
-    "m": handle_mail_command,
     "b": handle_bulletin_command,
-    "c": handle_channel_directory_command,
     "j": handle_js8call_command,
     "x": handle_help_command
 }
