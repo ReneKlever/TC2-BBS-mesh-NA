@@ -54,9 +54,9 @@ def handle_help_command(sender_id, interface, menu_name=None):
     if menu_name:
         update_user_state(sender_id, {'command': 'MENU', 'menu': menu_name, 'step': 1})
         if menu_name == 'bbs':
-            response = build_menu(bbs_menu_items, "📰BBS Menu📰")
+            response = build_menu(bbs_menu_items, "📰BBS Menu📰","a","a")
         elif menu_name == 'utilities':
-            response = build_menu(utilities_menu_items, "🛠️Utilities Menu🛠️")
+            response = build_menu(utilities_menu_items, "🛠️Utilities Menu🛠️","a","a")
     else:
         update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1})  # Reset to main menu state
         mails = len(get_mail(get_node_id_from_num(sender_id, interface)))
