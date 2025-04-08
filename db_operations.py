@@ -96,6 +96,12 @@ def get_bulletins(board):
     c.execute("SELECT id, subject, sender_short_name, date, unique_id FROM bulletins WHERE board = ? COLLATE NOCASE", (board,))
     return c.fetchall()
 
+def get_hot_bulletin():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT date FROM bulletins order by date desc")
+    return c.fetchone()
+
 def get_bulletin_content(bulletin_id):
     conn = get_db_connection()
     c = conn.cursor()
