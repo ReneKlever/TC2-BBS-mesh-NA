@@ -32,10 +32,7 @@ def build_menu(items, menu_name):
         if item.strip() == 'Q':
             menu_str += "[Q]uick Commands\n"
         elif item.strip() == 'B':
-            if menu_name == "📰BBS Menu📰":
-                menu_str += "[B]ulletins\n"
-            else:
-                menu_str += "[B]BS\n"
+            menu_str += "[B]ulletins\n"
         elif item.strip() == 'U':
             menu_str += "[U]tilities\n"
         elif item.strip() == 'X':
