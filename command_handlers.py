@@ -25,8 +25,7 @@ main_menu_items = config['menu']['main_menu_items'].split(',')
 bbs_menu_items = config['menu']['bbs_menu_items'].split(',')
 utilities_menu_items = config['menu']['utilities_menu_items'].split(',')
 
-
-def build_menu(items, menu_name):
+def build_menu(items, menu_name, mails):
     menu_str = f"{menu_name}\n"
     for item in items:
         if item.strip() == 'Q':
@@ -38,7 +37,7 @@ def build_menu(items, menu_name):
         elif item.strip() == 'X':
             menu_str += "E[X]IT\n"
         elif item.strip() == 'M':
-            menu_str += "[M]ail\n"
+            menu_str += "[M]ail (✉️:" + str(mails) + ")\n"
         elif item.strip() == 'C':
             menu_str += "[C]hannel Dir\n"
         elif item.strip() == 'J':
@@ -51,6 +50,8 @@ def build_menu(items, menu_name):
             menu_str += "[W]all of Shame\n"
     return menu_str
 
+
+
 def handle_help_command(sender_id, interface, menu_name=None):
     if menu_name:
         update_user_state(sender_id, {'command': 'MENU', 'menu': menu_name, 'step': 1})
@@ -60,8 +61,8 @@ def handle_help_command(sender_id, interface, menu_name=None):
             response = build_menu(utilities_menu_items, "🛠️Utilities Menu🛠️")
     else:
         update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1})  # Reset to main menu state
-        mail = get_mail(get_node_id_from_num(sender_id, interface))
-        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾 (✉️:{len(mail)})")
+        mails = len(get_mail(get_node_id_from_num(sender_id, interface)))
+        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾", mails)
     send_message(response, sender_id, interface)
     
 def get_node_name(node_id, interface):
