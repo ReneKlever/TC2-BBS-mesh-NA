@@ -7,14 +7,14 @@ from meshtastic import BROADCAST_NUM
 
 from db_operations import (
     add_bulletin, add_mail, delete_mail,
-    get_bulletin_content, get_bulletins, get_hot_bulletin,
+    get_bulletin_content, get_bulletins, get_hot_bulletin, get_hot_bulletins,
     get_mail, get_mail_content,
     add_channel, get_channels, get_sender_id_by_mail_id
 )
 from utils import (
     get_node_id_from_num, get_node_info,
     get_node_short_name, send_message,
-    update_user_state
+    update_user_state, datum
 )
 
 # Read the configuration for menu options
@@ -37,7 +37,7 @@ def build_menu(items, menu_name, mails, date):
         elif item.strip() == 'X':
             menu_str += "E[X]IT\n"
         elif item.strip() == 'M':
-            menu_str += "[M]ail (✉️:" + str(mails) + ")\n"
+         menu_str += "[M]ail (✉️:" + str(mails) + ")\n"
         elif item.strip() == 'C':
             menu_str += "[C]hannel Dir\n"
         elif item.strip() == 'J':
@@ -60,10 +60,8 @@ def handle_help_command(sender_id, interface, menu_name=None):
     else:
         update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1})  # Reset to main menu state
         mails = len(get_mail(get_node_id_from_num(sender_id, interface)))
-        date = str(get_hot_bulletin())
-        date = date[2:]
-        date = date[:-3]  
-        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾", mails, date)
+        date = get_hot_bulletins()
+        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾", mails, datum(date[0]))
     send_message(response, sender_id, interface)
     
 def get_node_name(node_id, interface):
@@ -81,7 +79,14 @@ def handle_mail_command(sender_id, interface):
 
 
 def handle_bulletin_command(sender_id, interface):
-    response = f"📰Bulletin Menu📰\nWhich board would you like to enter?\n[G]eneral  [I]nfo  [N]ews  [U]rgent"
+    date = get_hot_bulletin("general")
+    response = f"📰Bulletin Menu📰\nWhich board would you like to enter?\n[G]eneral (" + datum(date[0]) + ")\n"
+    date = get_hot_bulletin("info")
+    response += "[I]nfo        (" + datum(date[0]) + ")\n"
+    date = get_hot_bulletin("news")
+    response += "[N]ews     (" + datum(date[0]) + ")\n"
+    date = get_hot_bulletin("urgent")
+    response += "[U]rgent   (" + datum(date[0]) + ")\n"
     send_message(response, sender_id, interface)
     update_user_state(sender_id, {'command': 'BULLETIN_MENU', 'step': 1})
 
