@@ -11,6 +11,12 @@ def update_user_state(user_id, state):
 def get_user_state(user_id):
     return user_states.get(user_id, None)
 
+def datum(date):
+    yymmdd = date.split(' ')
+    jaar,maand,dag = yymmdd[0].split('-')
+    mydate = yymmdd[1] + " " + dag + "/" + maand + "/" + jaar[2:]
+    return mydate
+
 
 def send_message(message, destination, interface):
     max_payload_size = 200
