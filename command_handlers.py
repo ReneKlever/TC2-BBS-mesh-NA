@@ -221,7 +221,8 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
             handle_bb_steps(sender_id, 'r', 2, state, interface, bbs_nodes)
         else:
             send_message(f"Trying to delete, dont know how yet", sender_id, interface)
-
+            handle_bb_steps(sender_id, 'd', 2, state, interface, bbs_nodes)
+ 
     elif step == 4:
         subject = message
         send_message("Send the contents of your bulletin. Send a message with END when finished.", sender_id, interface)
