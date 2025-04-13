@@ -199,6 +199,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
             else:
                 send_message(f"No bulletins in {board_name}.", sender_id, interface)
                 handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)        elif message.lower() == 'p':
+        elif message.lower() == 'p':
             if board_name.lower() == 'urgent':
                 node_id = get_node_id_from_num(sender_id, interface)
                 allowed_nodes = interface.allowed_nodes
