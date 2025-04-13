@@ -173,7 +173,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
             return
         board_name = boards[int(message)]
         bulletins = get_bulletins(board_name)
-        response = f"{board_name} has {len(bulletins)} messages.\n[R]ead  [P]ost"
+        response = f"{board_name} has {len(bulletins)} messages.\n[R]ead  [P]ost [D]elete"
         send_message(response, sender_id, interface)
         update_user_state(sender_id, {'command': 'BULLETIN_ACTION', 'step': 2, 'board': board_name})
 
@@ -189,7 +189,16 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
             else:
                 send_message(f"No bulletins in {board_name}.", sender_id, interface)
                 handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)
-        elif message.lower() == 'p':
+        elif message.lower() == 'd':
+            bulletins = get_bulletins(board_name)
+            if bulletins:
+                send_message(f"Select a bulletin number to delete from {board_name} or press X to exit:", sender_id, interface)
+                for bulletin in bulletins:
+                    send_message(f"[{bulletin[0]}] {bulletin[1]} ({datum(bulletin[3])}) {bulletin[2]}", sender_id, interface)
+                update_user_state(sender_id, {'command': 'BULLETIN_DELETE', 'step': 3, 'board': board_name})
+            else:
+                send_message(f"No bulletins in {board_name}.", sender_id, interface)
+                handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)        elif message.lower() == 'p':
             if board_name.lower() == 'urgent':
                 node_id = get_node_id_from_num(sender_id, interface)
                 allowed_nodes = interface.allowed_nodes
