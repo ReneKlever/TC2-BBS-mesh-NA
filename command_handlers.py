@@ -212,11 +212,15 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
             update_user_state(sender_id, {'command': 'BULLETIN_POST', 'step': 4, 'board': board_name})
 
     elif step == 3:
-        bulletin_id = int(message)
-        sender_short_name, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
-        send_message(f"From: {sender_short_name}\nDate: {datum(date)}\nSubject: {subject}\n- - - - - - -\n{content}", sender_id, interface)
-        board_name = state['board']
-        handle_bb_steps(sender_id, 'r', 2, state, interface, bbs_nodes)
+        command = state['command']
+        if command == 'BULLETIN_READ':
+            bulletin_id = int(message)
+            sender_short_name, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
+            send_message(f"From: {sender_short_name}\nDate: {datum(date)}\nSubject: {subject}\n- - - - - - -\n{content}", sender_id, interface)
+            board_name = state['board']
+            handle_bb_steps(sender_id, 'r', 2, state, interface, bbs_nodes)
+        else:
+            send_message(f"Trying to delete, dont know how yet", sender_id, interface)
 
     elif step == 4:
         subject = message
