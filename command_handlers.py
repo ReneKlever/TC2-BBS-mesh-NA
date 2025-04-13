@@ -182,7 +182,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
         if message.lower() == 'r':
             bulletins = get_bulletins(board_name)
             if bulletins:
-                send_message(f"Select a bulletin number to view from {board_name}:", sender_id, interface)
+                send_message(f"Select a bulletin number to view from {board_name} or press X to exit:", sender_id, interface)
                 for bulletin in bulletins:
                     send_message(f"[{bulletin[0]}] {bulletin[1]} ({datum(bulletin[3])})", sender_id, interface)
                 update_user_state(sender_id, {'command': 'BULLETIN_READ', 'step': 3, 'board': board_name})
