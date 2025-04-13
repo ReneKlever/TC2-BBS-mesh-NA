@@ -184,7 +184,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
             if bulletins:
                 send_message(f"Select a bulletin number to view from {board_name}:", sender_id, interface)
                 for bulletin in bulletins:
-                    send_message(f"[{bulletin[0]}] {bulletin[1]}", sender_id, interface)
+                    send_message(f"[{bulletin[0]}] {bulletin[1]} ({datum(bulletin[3])})", sender_id, interface)
                 update_user_state(sender_id, {'command': 'BULLETIN_READ', 'step': 3, 'board': board_name})
             else:
                 send_message(f"No bulletins in {board_name}.", sender_id, interface)
@@ -204,7 +204,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
     elif step == 3:
         bulletin_id = int(message)
         sender_short_name, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
-        send_message(f"From: {sender_short_name}\nDate: {date}\nSubject: {subject}\n- - - - - - -\n{content}", sender_id, interface)
+        send_message(f"From: {sender_short_name}\nDate: {datum(date)}\nSubject: {subject}\n- - - - - - -\n{content}", sender_id, interface)
         board_name = state['board']
         handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)
 
