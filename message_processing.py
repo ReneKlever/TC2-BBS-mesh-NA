@@ -50,6 +50,7 @@ bulletin_menu_handlers = {
 board_action_handlers = {
     "r": lambda sender_id, interface, state: handle_bb_steps(sender_id, 'r', 2, state, interface, None),
     "p": lambda sender_id, interface, state: handle_bb_steps(sender_id, 'p', 2, state, interface, None),
+    "d": lambda sender_id, interface, state: handle_bb_steps(sender_id, 'd', 2, state, interface, None),
     "x": handle_help_command
 }
 
@@ -130,7 +131,7 @@ def process_message(sender_id, message, interface, is_sync_message=False):
                 return
 
             if message_lower in handlers:
-                if state and state['command'] in ['BULLETIN_ACTION', 'BULLETIN_READ', 'BULLETIN_POST', 'BULLETIN_POST_CONTENT']:
+                if state and state['command'] in ['BULLETIN_ACTION', 'BULLETIN_READ', 'BULLETIN_POST', 'BULLETIN_DELETE', 'BULLETIN_POST_CONTENT']:
                     handlers[message_lower](sender_id, interface, state)
                 else:
                     handlers[message_lower](sender_id, interface)
@@ -165,6 +166,8 @@ def process_message(sender_id, message, interface, is_sync_message=False):
                 elif command == 'BULLETIN_POST_CONTENT':
                     handle_bb_steps(sender_id, message, 5, state, interface, bbs_nodes)
                 elif command == 'BULLETIN_READ':
+                    handle_bb_steps(sender_id, message, 3, state, interface, bbs_nodes)
+                elif command == 'BULLETIN_DELETE':
                     handle_bb_steps(sender_id, message, 3, state, interface, bbs_nodes)
                 elif command == 'JS8CALL_MENU':
                     handle_js8call_steps(sender_id, message, step, interface, state)
