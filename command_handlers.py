@@ -206,7 +206,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
         sender_short_name, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
         send_message(f"From: {sender_short_name}\nDate: {datum(date)}\nSubject: {subject}\n- - - - - - -\n{content}", sender_id, interface)
         board_name = state['board']
-        handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)
+        handle_bb_steps(sender_id, 'r', 2, state, interface, bbs_nodes)
 
     elif step == 4:
         subject = message
