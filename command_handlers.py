@@ -7,7 +7,7 @@ from meshtastic import BROADCAST_NUM
 
 from db_operations import (
     add_bulletin, add_mail, delete_mail,
-    get_bulletin_content, get_bulletins, get_hot_bulletin, get_hot_bulletins,
+    get_bulletin_content, get_bulletins, get_hot_bulletin, get_hot_bulletins, delete_bulletin,
     get_mail, get_mail_content,
     add_channel, get_channels, get_sender_id_by_mail_id
 )
