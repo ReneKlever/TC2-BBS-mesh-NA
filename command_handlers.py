@@ -213,16 +213,25 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
 
     elif step == 3:
         command = state['command']
+        bulletin_id = int(message)
+        sender_short_name, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
         if command == 'BULLETIN_READ':
-            bulletin_id = int(message)
-            sender_short_name, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
             send_message(f"From: {sender_short_name}\nDate: {datum(date)}\nSubject: {subject}\n- - - - - - -\n{content}", sender_id, interface)
             board_name = state['board']
             handle_bb_steps(sender_id, 'r', 2, state, interface, bbs_nodes)
         else:
-            send_message(f"Trying to delete, dont know how yet", sender_id, interface)
+            node_id = get_node_id_from_num(sender_id, interface)
+            node_info = interface.nodes.get(node_id)
+            if node_info is None:
+                send_message("Error: Unable to retrieve your node information.", sender_id, interface)
+                update_user_state(sender_id, None)
+                return
+            your_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
+            send_message(f"You are {your_short_name}", sender_id, interface)
+            if your_short_name == sender_short_name:
+                send_message("Deleting allowed", sender_id, interface)
             handle_bb_steps(sender_id, 'd', 2, state, interface, bbs_nodes)
- 
+
     elif step == 4:
         subject = message
         send_message("Send the contents of your bulletin. Send a message with END when finished.", sender_id, interface)
