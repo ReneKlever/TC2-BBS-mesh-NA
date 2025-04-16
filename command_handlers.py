@@ -577,7 +577,7 @@ def handle_check_bulletin_command(sender_id, message, interface):
 
         response = f"📰 Bulletins on {board_name} board:\n"
         for i, bulletin in enumerate(bulletins):
-            response += f"[{i+1:02d}] Subject: {bulletin[1]}, From: {bulletin[2]}, Date: {bulletin[3]}\n"
+            response += f"[{i+1:02d}] Subject: {bulletin[1]}, From: {bulletin[2]}, Date: {datum(bulletin[3])}\n"
         response += "\nPlease reply with the number of the bulletin you want to read."
         send_message(response, sender_id, interface)
 
@@ -598,7 +598,7 @@ def handle_read_bulletin_command(sender_id, message, state, interface):
 
         bulletin_id = bulletins[message_number][0]
         sender, date, subject, content, unique_id = get_bulletin_content(bulletin_id)
-        response = f"Date: {date}\nFrom: {sender}\nSubject: {subject}\n\n{content}"
+        response = f"Date: {datum(date)}\nFrom: {sender}\nSubject: {subject}\n\n{content}"
         send_message(response, sender_id, interface)
 
         update_user_state(sender_id, None)
