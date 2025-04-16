@@ -234,24 +234,8 @@ The following device roles have been working:
 You interact with the BBS by sending direct messages to the node that's connected to the system running the Python script. Sending any message to it will get a response with the main menu.  
 Make selections by sending messages based on the letter or number in brackets - Send M for [M]ail Menu for example.
 
-A video of it in use is available on our YouTube channel:
+A video of it in use is available on YouTube:
 
 [![TC²-BBS-Mesh](https://img.youtube.com/vi/d6LhY4HoimU/0.jpg)](https://www.youtube.com/watch?v=d6LhY4HoimU)
 
-## Thanks
-
-**Meshtastic:**
-
-Big thanks to [Meshtastic](https://github.com/meshtastic) and [pdxlocations](https://github.com/pdxlocations) for the great Python examples:
-
-[python/examples at master · meshtastic/python (github.com)](https://github.com/meshtastic/python/tree/master/examples)
-
-[pdxlocations/Meshtastic-Python-Examples (github.com)](https://github.com/pdxlocations/Meshtastic-Python-Examples)
-
-**JS8Call:**
-
-For the JS8Call side of things, big thanks to Jordan Sherer for JS8Call and the [example API Python script](https://bitbucket.org/widefido/js8call/src/js8call/tcp.py)
-
-## License
-
-GNU General Public License v3.0
+## Thanks TC2 for creating the base if this magnificent server
