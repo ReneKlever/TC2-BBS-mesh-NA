@@ -222,14 +222,21 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
         else:
             node_id = get_node_id_from_num(sender_id, interface)
             node_info = interface.nodes.get(node_id)
+            allowed_nodes = interface.allowed_nodes
             if node_info is None:
                 send_message("Error: Unable to retrieve your node information.", sender_id, interface)
                 update_user_state(sender_id, None)
                 return
-            your_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
-            send_message(f"You are {your_short_name}", sender_id, interface)
+            your_short_name = node_info['user'].get('shortName', f"Node {sender_id}") + "t"
             if your_short_name == sender_short_name:
-                send_message("Deleting allowed", sender_id, interface)
+                deleting = 'yes'
+            if allowed_nodes and node_id in allowed_nodes:
+                deleting = 'yes'
+            if deleting == 'yes':
+                delete_bulletin(bulletin_id, bbs_nodes, interface)
+                send_message("Deleting bulletin now", sender_id, interface)
+            else:
+                send_message("Deleting allowed only for owner", sender_id, interface)
             handle_bb_steps(sender_id, 'd', 2, state, interface, bbs_nodes)
 
     elif step == 4:
