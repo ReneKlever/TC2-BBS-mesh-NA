@@ -7,7 +7,7 @@ from meshtastic import BROADCAST_NUM
 
 from db_operations import (
     add_bulletin, add_mail, delete_mail,
-    get_bulletin_content, get_bulletins, get_hot_bulletin, get_hot_bulletins, delete_bulletin,
+    get_bulletin_content, get_bulletins, get_hot_bulletin,get_hot_bulletins, delete_bulletin,
     get_mail, get_mail_content,
     add_channel, get_channels, get_sender_id_by_mail_id
 )
@@ -25,6 +25,7 @@ main_menu_items = config['menu']['main_menu_items'].split(',')
 bbs_menu_items = config['menu']['bbs_menu_items'].split(',')
 utilities_menu_items = config['menu']['utilities_menu_items'].split(',')
 
+
 def build_menu(items, menu_name, mails, date):
     menu_str = f"{menu_name}\n"
     for item in items:
@@ -37,7 +38,7 @@ def build_menu(items, menu_name, mails, date):
         elif item.strip() == 'X':
             menu_str += "E[X]IT\n"
         elif item.strip() == 'M':
-         menu_str += "[M]ail (✉️:" + str(mails) + ")\n"
+            menu_str += "[M]ail (✉️:" + str(mails) + ")\n"
         elif item.strip() == 'C':
             menu_str += "[C]hannel Dir\n"
         elif item.strip() == 'J':
@@ -61,7 +62,7 @@ def handle_help_command(sender_id, interface, menu_name=None):
         update_user_state(sender_id, {'command': 'MAIN_MENU', 'step': 1})  # Reset to main menu state
         mails = len(get_mail(get_node_id_from_num(sender_id, interface)))
         date = get_hot_bulletins()
-        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾", mails, datum(date[0]))
+        response = build_menu(main_menu_items, f"💾NieuwAlphen BBS💾 ", mails, datum(date[0]))
     send_message(response, sender_id, interface)
     
 def get_node_name(node_id, interface):
@@ -80,7 +81,7 @@ def handle_mail_command(sender_id, interface):
 
 def handle_bulletin_command(sender_id, interface):
     date = get_hot_bulletin("general")
-    response = f"📰Bulletin Menu📰\nWhich board would you like to enter?\n[G]eneral (" + datum(date[0]) + ")\n"
+    response = f"📰Bulletin Menu📰\nSelect the board to enter?\n[G]eneral (" + datum(date[0]) + ")\n"
     date = get_hot_bulletin("info")
     response += "[I]nfo        (" + datum(date[0]) + ")\n"
     date = get_hot_bulletin("news")
@@ -198,7 +199,7 @@ def handle_bb_steps(sender_id, message, step, state, interface, bbs_nodes):
                 update_user_state(sender_id, {'command': 'BULLETIN_DELETE', 'step': 3, 'board': board_name})
             else:
                 send_message(f"No bulletins in {board_name}.", sender_id, interface)
-                handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)        elif message.lower() == 'p':
+                handle_bb_steps(sender_id, 'e', 1, state, interface, bbs_nodes)
         elif message.lower() == 'p':
             if board_name.lower() == 'urgent':
                 node_id = get_node_id_from_num(sender_id, interface)
