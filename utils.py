@@ -17,7 +17,6 @@ def datum(date):
     mydate = yymmdd[1] + " " + dag + "/" + maand + "/" + jaar[2:]
     return mydate
 
-
 def send_message(message, destination, interface):
     max_payload_size = 200
     for i in range(0, len(message), max_payload_size):
