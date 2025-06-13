@@ -1,14 +1,21 @@
-# TC²-BBS Meshtastic Version
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B1OZ22Z)
+# TC²-BBS Meshtastic Version enhanced by Rene
 
 This is the TC²-BBS system integrated with Meshtastic devices. The system allows for message handling, bulletin boards, mail systems, and a channel directory.
+In comparison with the original this version is enhanced:
 
-### Docker
+- There is a new list allowed2bbs_nodes in the config that define the nodes that are able to access the server. All other nodes are completely ignored. This gives a basic security that will confine the access to a list of nodes only.
+- I got rid of the extra BBS menu to increase handling speed
+- Main menu also contains mail for fast access
+- Bulletin option in main menu shows last post date
+- Bulletin menu shows last post date for every board
+- All dates in the boards are now presented in dutch format
+- Viewing board contents now alway sorted date descending
+- Bulletin boards now offer a delete option
+- Users can only delete their own bulletins
+- The allowed_nodes list is also used for administrative access
+- Nodes with administrative access can also delete bulletins from others
 
-If you're a Docker user, TC²-BBS Meshtastic is available on Docker Hub!
 
-[![Docker HUB](https://icon-icons.com/downloadimage.php?id=151885&root=2530/PNG/128/&file=docker_button_icon_151885.png)](https://hub.docker.com/r/thealhu/tc2-bbs-mesh)
 
 ## Setup
 
@@ -32,7 +39,7 @@ If you're a Docker user, TC²-BBS Meshtastic is available on Docker Hub!
    
    ```sh
    cd ~
-   git clone https://github.com/TheCommsChannel/TC2-BBS-mesh.git
+   git clone https://github.com/ReneKlever/TC2-BBS-mesh.git
    cd TC2-BBS-mesh
    ```
 
@@ -227,24 +234,8 @@ The following device roles have been working:
 You interact with the BBS by sending direct messages to the node that's connected to the system running the Python script. Sending any message to it will get a response with the main menu.  
 Make selections by sending messages based on the letter or number in brackets - Send M for [M]ail Menu for example.
 
-A video of it in use is available on our YouTube channel:
+A video of it in use is available on YouTube:
 
 [![TC²-BBS-Mesh](https://img.youtube.com/vi/d6LhY4HoimU/0.jpg)](https://www.youtube.com/watch?v=d6LhY4HoimU)
 
-## Thanks
-
-**Meshtastic:**
-
-Big thanks to [Meshtastic](https://github.com/meshtastic) and [pdxlocations](https://github.com/pdxlocations) for the great Python examples:
-
-[python/examples at master · meshtastic/python (github.com)](https://github.com/meshtastic/python/tree/master/examples)
-
-[pdxlocations/Meshtastic-Python-Examples (github.com)](https://github.com/pdxlocations/Meshtastic-Python-Examples)
-
-**JS8Call:**
-
-For the JS8Call side of things, big thanks to Jordan Sherer for JS8Call and the [example API Python script](https://bitbucket.org/widefido/js8call/src/js8call/tcp.py)
-
-## License
-
-GNU General Public License v3.0
+## Thanks TC2 for creating the base if this magnificent server

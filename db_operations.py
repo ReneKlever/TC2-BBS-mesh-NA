@@ -93,8 +93,20 @@ def add_bulletin(board, sender_short_name, subject, content, bbs_nodes, interfac
 def get_bulletins(board):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, subject, sender_short_name, date, unique_id FROM bulletins WHERE board = ? COLLATE NOCASE", (board,))
+    c.execute("SELECT id, subject, sender_short_name, date, unique_id FROM bulletins WHERE board = ? COLLATE NOCASE order by date desc", (board,))
     return c.fetchall()
+
+def get_hot_bulletins():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT date FROM bulletins order by date desc")
+    return c.fetchone()
+
+def get_hot_bulletin(board):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT date FROM bulletins WHERE board = ? COLLATE NOCASE order by date desc", (board,))
+    return c.fetchone()
 
 def get_bulletin_content(bulletin_id):
     conn = get_db_connection()
