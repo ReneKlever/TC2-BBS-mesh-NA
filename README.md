@@ -238,4 +238,4 @@ A video of it in use is available on YouTube:
 
 [![TC²-BBS-Mesh](https://img.youtube.com/vi/d6LhY4HoimU/0.jpg)](https://www.youtube.com/watch?v=d6LhY4HoimU)
 
-## Thanks TC2 for creating the base if this magnificent server
+## Thanks TC2 for creating the base of this magnificent server
