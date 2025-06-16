@@ -38,6 +38,33 @@ def initialize_database():
                 );''')
     conn.commit()
 
+def initialize_artikelen():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''DROP TABLE artikelen ''')
+    c.execute('''CREATE TABLE artikelen (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    naam TEXT NOT NULL,
+                    omschrijving TEXT NOT NULL,
+                    prijs NUMERIC(10,2) NOT NULL,
+                    leverancier TEXT NOT NULL,
+                    beschikbaar TEXT NOT NULL
+                );''')
+    conn.commit()
+
+def initialize_bestellingen():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''DROP TABLE bestellingen ''')
+    c.execute('''CREATE TABLE IF NOT EXISTS bestellingen (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_short_name TEXT NOT NULL,
+                    klantnaam TEXT NOT NULL,
+                    artikel INTEGER,
+                    aantal INTEGER
+                );''')
+    conn.commit()
+
 def list_bulletins():
     conn = get_db_connection()
     c = conn.cursor()
@@ -79,6 +106,88 @@ def list_channels():
         print_bold("No channels found.")
     print_separator()
     return channels
+
+def list_artikelen():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, naam, omschrijving, prijs, leverancier, beschikbaar FROM artikelen")
+    artikelen = c.fetchall()
+    if artikelen:
+        print_bold("Artikelen:")
+        for artikel in artikelen:
+            print_bold(f"(ID: {artikel[0]}, Naam: {artikel[1]}, Omschrijving: {artikel[2]}, Prijs: {artikel[3]}, Leverancier: {artikel[4]}, Beschikbaar: {artikel[5]})")
+    else:
+        print_bold("Geen artikelen gevonden.")
+    print_separator()
+    return artikelen
+
+def list_bestellingen():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, sender_short_name, klantnaam, artikel, aantal FROM bestellingen")
+    bestellingen = c.fetchall()
+    if bestellingen:
+        print_bold("Bestellingen:")
+        for bestelling in bestellingen:
+            print_bold(f"(ID: {bestelling[0]}, Sender: {bestelling[1]}, Klantnaam: {bestelling[2]}, Artikel: {bestelling[3]}, Aantal: {bestelling[4]})")
+    else:
+        print_bold("Geen bestellingen gevonden.")
+    print_separator()
+    return bestellingen
+
+def ververs_artikelen():
+    initialize_artikelen()
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 100gr",3.00,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 200gr",3.50,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 300gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 400gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 500gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 600gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 700gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 800gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 900gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 1000gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 1100gr",3.99,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 1200gr",3.99,"bas","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 1300gr",3.50,"bas","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 4i1200gr",3.50,"bas","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 1500gr",3.50,"kazan","ja"))
+    c.execute(
+        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        ("worst","bio runder 1600gr",3.50,"bas","ja"))
+    conn.commit()
 
 def delete_bulletin():
     bulletins = list_bulletins()
@@ -136,7 +245,11 @@ def display_menu():
     print("4. Delete Bulletins")
     print("5. Delete Mail")
     print("6. Delete Channels")
-    print("7. Exit")
+    print("7. List Artikelen")
+    print("8. Ververs Artikelen")
+    print("9. List Bestellingen")
+    print("10. Verwijder alle Bestellingen")
+    print("x. Exit")
 
 def display_banner():
     banner = """
@@ -186,6 +299,14 @@ def main():
         elif choice == '6':
             delete_channel()
         elif choice == '7':
+            list_artikelen()
+        elif choice == '8':
+            ververs_artikelen()
+        elif choice == '9':
+            list_bestellingen()
+        elif choice == '10':
+            initialize_bestellingen()
+        elif choice == 'x':
             break
         else:
             print_bold("Invalid choice. Please try again.")
