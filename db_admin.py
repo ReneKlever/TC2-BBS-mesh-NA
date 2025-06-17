@@ -36,32 +36,47 @@ def initialize_database():
                     name TEXT NOT NULL,
                     url TEXT NOT NULL
                 );''')
-    conn.commit()
-
-def initialize_artikelen():
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('''DROP TABLE artikelen ''')
-    c.execute('''CREATE TABLE artikelen (
+    c.execute('''CREATE TABLE IF NOT EXISTS articles (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    naam TEXT NOT NULL,
-                    omschrijving TEXT NOT NULL,
-                    prijs NUMERIC(10,2) NOT NULL,
-                    leverancier TEXT NOT NULL,
-                    beschikbaar TEXT NOT NULL
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    price NUMERIC(10,2) NOT NULL,
+                    supplier TEXT NOT NULL,
+                    available TEXT NOT NULL
+                );''')
+    c.execute('''CREATE TABLE IF NOT EXISTS orders (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_short_name TEXT NOT NULL,
+                    article INTEGER,
+                    quantity INTEGER,
+                    comment TEXT NOT NULL
                 );''')
     conn.commit()
 
-def initialize_bestellingen():
+def initialize_articles():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('''DROP TABLE bestellingen ''')
-    c.execute('''CREATE TABLE IF NOT EXISTS bestellingen (
+    c.execute('''DROP TABLE articles ''')
+    c.execute('''CREATE TABLE articles (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    price NUMERIC(10,2) NOT NULL,
+                    supplier TEXT NOT NULL,
+                    available TEXT NOT NULL
+                );''')
+    conn.commit()
+
+def initialize_orders():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''DROP TABLE orders ''')
+    c.execute('''CREATE TABLE orders (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     sender_short_name TEXT NOT NULL,
-                    klantnaam TEXT NOT NULL,
-                    artikel INTEGER,
-                    aantal INTEGER
+                    article INTEGER,
+                    quantity INTEGER,
+                    comment TEXT NOT NULL
                 );''')
     conn.commit()
 
@@ -107,85 +122,85 @@ def list_channels():
     print_separator()
     return channels
 
-def list_artikelen():
+def list_articles():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, naam, omschrijving, prijs, leverancier, beschikbaar FROM artikelen")
-    artikelen = c.fetchall()
-    if artikelen:
-        print_bold("Artikelen:")
-        for artikel in artikelen:
-            print_bold(f"(ID: {artikel[0]}, Naam: {artikel[1]}, Omschrijving: {artikel[2]}, Prijs: {artikel[3]}, Leverancier: {artikel[4]}, Beschikbaar: {artikel[5]})")
+    c.execute("SELECT id, name, description, price, supplier, available FROM articles")
+    articles = c.fetchall()
+    if articles:
+        print_bold("Articles:")
+        for article in articles:
+            print_bold(f"(ID: {article[0]}, Name: {article[1]}, Description: {article[2]}, Price: {article[3]}, Supplier: {article[4]}, Available: {article[5]})")
     else:
-        print_bold("Geen artikelen gevonden.")
+        print_bold("No articles found.")
     print_separator()
-    return artikelen
+    return
 
-def list_bestellingen():
+def list_orders():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, sender_short_name, klantnaam, artikel, aantal FROM bestellingen")
-    bestellingen = c.fetchall()
-    if bestellingen:
-        print_bold("Bestellingen:")
-        for bestelling in bestellingen:
-            print_bold(f"(ID: {bestelling[0]}, Sender: {bestelling[1]}, Klantnaam: {bestelling[2]}, Artikel: {bestelling[3]}, Aantal: {bestelling[4]})")
+    c.execute("SELECT id, sender_short_name, article, quantity, comment FROM orders")
+    orders = c.fetchall()
+    if orders:
+        print_bold("orders:")
+        for order in orders:
+            print_bold(f"(ID: {order[0]}, Sender: {order[1]}, Article: {order[2]}, Quantity: {order[3]}, Comment: {order[4]})")
     else:
-        print_bold("Geen bestellingen gevonden.")
+        print_bold("No orders found.")
     print_separator()
-    return bestellingen
+    return
 
-def ververs_artikelen():
-    initialize_artikelen()
+def refresh_articles():
+    initialize_articles()
     conn = get_db_connection()
     c = conn.cursor()
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 100gr",3.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 200gr",3.50,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 300gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 400gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 500gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 600gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 700gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 800gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 900gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 1000gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 1100gr",3.99,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 1200gr",3.99,"bas","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 1300gr",3.50,"bas","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 4i1200gr",3.50,"bas","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 1500gr",3.50,"kazan","ja"))
     c.execute(
-        "INSERT INTO artikelen (naam, omschrijving, prijs, leverancier, beschikbaar) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 1600gr",3.50,"bas","ja"))
     conn.commit()
 
@@ -245,10 +260,10 @@ def display_menu():
     print("4. Delete Bulletins")
     print("5. Delete Mail")
     print("6. Delete Channels")
-    print("7. List Artikelen")
-    print("8. Ververs Artikelen")
-    print("9. List Bestellingen")
-    print("10. Verwijder alle Bestellingen")
+    print("7. List Articles")
+    print("8. Refresh Articles")
+    print("9. List Orders")
+    print("10. Delete all Orders")
     print("x. Exit")
 
 def display_banner():
@@ -299,13 +314,13 @@ def main():
         elif choice == '6':
             delete_channel()
         elif choice == '7':
-            list_artikelen()
+            list_articles()
         elif choice == '8':
-            ververs_artikelen()
+            refresh_articles()
         elif choice == '9':
-            list_bestellingen()
+            list_orders()
         elif choice == '10':
-            initialize_bestellingen()
+            initialize_orders()
         elif choice == 'x':
             break
         else:
