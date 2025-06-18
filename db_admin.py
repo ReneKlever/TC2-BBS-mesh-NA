@@ -39,7 +39,7 @@ def initialize_database():
     c.execute('''CREATE TABLE IF NOT EXISTS articles (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
-                    description TEXT NOT NULL,
+                    description TEXT,
                     price NUMERIC(10,2) NOT NULL,
                     supplier TEXT NOT NULL,
                     available TEXT NOT NULL
@@ -49,7 +49,7 @@ def initialize_database():
                     sender_short_name TEXT NOT NULL,
                     article INTEGER,
                     quantity INTEGER,
-                    comment TEXT NOT NULL
+                    comment TEXT
                 );''')
     conn.commit()
 
@@ -60,7 +60,7 @@ def initialize_articles():
     c.execute('''CREATE TABLE articles (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
-                    description TEXT NOT NULL,
+                    description TEXT,
                     price NUMERIC(10,2) NOT NULL,
                     supplier TEXT NOT NULL,
                     available TEXT NOT NULL
@@ -76,7 +76,7 @@ def initialize_orders():
                     sender_short_name TEXT NOT NULL,
                     article INTEGER,
                     quantity INTEGER,
-                    comment TEXT NOT NULL
+                    comment TEXT
                 );''')
     conn.commit()
 
