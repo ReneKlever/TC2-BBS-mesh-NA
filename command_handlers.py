@@ -9,7 +9,8 @@ from db_operations import (
     add_bulletin, add_mail, delete_mail,
     get_bulletin_content, get_bulletins, get_hot_bulletin,get_hot_bulletins, delete_bulletin,
     get_mail, get_mail_content,
-    add_channel, get_channels, get_sender_id_by_mail_id
+    add_channel, get_channels, get_sender_id_by_mail_id,
+    get_articles, get_orders, add_order, delete_order
 )
 from utils import (
     get_node_id_from_num, get_node_info,
@@ -33,6 +34,8 @@ def build_menu(items, menu_name, mails, date):
             menu_str += "[Q]uick Commands\n"
         elif item.strip() == 'B':
             menu_str += "[B]ulletins (" + date + ")\n"
+        elif item.strip() == 'V':
+            menu_str += "[V]VoedselCoop\n"
         elif item.strip() == 'U':
             menu_str += "[U]tilities\n"
         elif item.strip() == 'X':
@@ -50,6 +53,94 @@ def build_menu(items, menu_name, mails, date):
         elif item.strip() == 'W':
             menu_str += "[W]all of Shame\n"
     return menu_str
+
+def handle_shop_command(sender_id, interface):
+    response = "VoedselCoop NieuwAlphen\nDe winkel is open\n[LA]Lijst beschikbare artikelen\n[BA]Bestel artikelen\n[BL]Lijst bestelde artikelen\n[BV]Verwijder bestelling\n"
+    send_message(response, sender_id, interface)
+
+def handle_list_articles_command(sender_id, interface):
+    articles = get_articles("")
+    cnt = 0
+    response = ""
+    if articles:
+        for article in articles:
+            cnt = cnt + 1
+            response = response + f"[{article[0]}]: {article[1]} ({article[2]}) € {article[3]:5.2f}\n"
+            if cnt == 4:
+                send_message(response, sender_id, interface)
+                response = ""
+                cnt = 0
+        if response:
+            send_message(response, sender_id, interface)
+    handle_shop_command(sender_id, interface)
+
+def handle_list_orders_command(sender_id, message_strip, interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    node_info = interface.nodes.get(node_id)
+    if node_info is None:
+       send_message("Error: Unable to retrieve your node information.", sender_id, interface)
+       update_user_state(sender_id, None)
+       return 
+    sender_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
+    logging.info(sender_short_name)
+    parts = message_strip.split(",,", 4)
+    if len(parts) > 1:
+        customer = parts[1]
+    else:
+        customer = ""
+    orders = get_orders(sender_short_name,customer)
+    logging.info({orders[0]})
+    cnt = 0
+    totalprice = 0
+    response = "Bestelling voor " + sender_short_name + " " + customer + "\n"
+    if orders:
+        for order in orders:
+            cnt = cnt + 1
+            itemprice = order[5] * order[6]
+            totalprice = totalprice + itemprice
+            response = response + f"[{order[0]}]:{order[1]} {order[5]} x {order[2]} ({order[3]}) €  {itemprice:5.2f}\n"
+            if cnt == 4:
+                send_message(response, sender_id, interface)
+                response = ""
+                cnt = 0
+        response = response + f"Totaal ongeveer €  {totalprice:5.2f}"
+        if response:
+            send_message(response, sender_id, interface)
+    handle_shop_command(sender_id, interface)
+
+def handle_add_order_command(sender_id,message_strip,interface):
+    parts = message_strip.split(",,", 4)
+    if len(parts) != 3:
+        send_message("Bestel artikelen als volgt:\nBA,,klantnaam,,aantal x artikel(,aantal x artikel,..)\nVoorbeeld:\nBA,,Rene,,1x22,3x34", sender_id, interface)
+        return
+    node_id = get_node_id_from_num(sender_id, interface)
+    node_info = interface.nodes.get(node_id)
+    if node_info is None:
+       send_message("Error: Unable to retrieve your node information.", sender_id, interface)
+       update_user_state(sender_id, None)
+       return 
+    sender_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
+    orders = parts[2].split(",", -1)
+    for order in orders:
+        (quantity, article) = order.split("x", 1)
+        logging.info({article})
+        add_order(sender_short_name, parts[1], article, quantity)
+    handle_list_orders_command(sender_id, "bl,," + parts[1], interface)
+
+def handle_delete_order_command(sender_id,message_strip,interface):
+    parts = message_strip.split(",,", 4)
+    if len(parts) != 3:
+        send_message("Verwijder bestelling als volgt:\nBV,,klantnaam,,ordernummer", sender_id, interface)
+        return
+    node_id = get_node_id_from_num(sender_id, interface)
+    node_info = interface.nodes.get(node_id)
+    if node_info is None:
+       send_message("Error: Unable to retrieve your node information.", sender_id, interface)
+       update_user_state(sender_id, None)
+       return 
+    sender_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
+    delete_order(parts[1], parts[2])
+    handle_list_orders_command(sender_id, "bl,," + parts[1], interface)
 
 def handle_help_command(sender_id, interface, menu_name=None):
     if menu_name:
