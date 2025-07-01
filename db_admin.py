@@ -47,37 +47,29 @@ def initialize_database():
     c.execute('''CREATE TABLE IF NOT EXISTS orders (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     sender_short_name TEXT NOT NULL,
+                    customer TEXT,
                     article INTEGER,
-                    quantity INTEGER,
-                    comment TEXT
+                    quantity INTEGER
                 );''')
     conn.commit()
-
-def initialize_articles():
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('''DROP TABLE articles ''')
-    c.execute('''CREATE TABLE articles (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    description TEXT,
-                    price NUMERIC(10,2) NOT NULL,
-                    supplier TEXT NOT NULL,
-                    available TEXT NOT NULL
-                );''')
+    c.execute('''DROP INDEX order_idx;''')
+    c.execute('''CREATE UNIQUE INDEX order_idx ON orders(sender_short_name,customer,article);''')
     conn.commit()
 
-def initialize_orders():
+def refresh_orders():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('''DROP TABLE orders ''')
-    c.execute('''CREATE TABLE orders (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    sender_short_name TEXT NOT NULL,
-                    article INTEGER,
-                    quantity INTEGER,
-                    comment TEXT
-                );''')
+    c.execute("DELETE FROM orders")
+    c.execute("UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='orders'")
+    c.execute(
+        "INSERT INTO orders (sender_short_name, customer, article, quantity) VALUES (?, ?, ?, ?)",
+        ("REN1","Anja",3,2))
+    c.execute(
+        "INSERT INTO orders (sender_short_name, customer, article, quantity) VALUES (?, ?, ?, ?)",
+        ("REN1","Anja",5,3))
+    c.execute(
+        "INSERT INTO orders (sender_short_name, customer, article, quantity) VALUES (?, ?, ?, ?)",
+        ("REN1","Rene",10,1))
     conn.commit()
 
 def list_bulletins():
@@ -139,69 +131,70 @@ def list_articles():
 def list_orders():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, sender_short_name, article, quantity, comment FROM orders")
+    c.execute("SELECT id, sender_short_name, customer, article, quantity FROM orders")
     orders = c.fetchall()
     if orders:
         print_bold("orders:")
         for order in orders:
-            print_bold(f"(ID: {order[0]}, Sender: {order[1]}, Article: {order[2]}, Quantity: {order[3]}, Comment: {order[4]})")
+            print_bold(f"(ID: {order[0]}, Sender: {order[1]}, Customer: {order[2]}, Article: {order[3]}, Quantity: {order[4]})")
     else:
         print_bold("No orders found.")
     print_separator()
     return
 
 def refresh_articles():
-    initialize_articles()
     conn = get_db_connection()
     c = conn.cursor()
+    c.execute("DELETE FROM articles")
+    c.execute("UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='articles'")
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
         ("worst","bio runder 100gr",3.00,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 200gr",3.50,"kazan","ja"))
+        ("braadworst","bio runder 200gr",3.50,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 300gr",3.99,"kazan","ja"))
+        ("knakworst","bio runder 4 stuks",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 400gr",3.99,"kazan","ja"))
+        ("biefstuk","bio runder 400gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 500gr",3.99,"kazan","ja"))
+        ("beenham","bio plakjes 200gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 600gr",3.99,"kazan","ja"))
+        ("entrecote","bio runder 600gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 700gr",3.99,"kazan","ja"))
+        ("stoofvlees","bio runder 700gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 800gr",3.99,"kazan","ja"))
+        ("ossenworst","bio runder",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 900gr",3.99,"kazan","ja"))
+        ("ontbijtspek","bio 200gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 1000gr",3.99,"kazan","ja"))
+        ("gehakt","bio runder 300gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 1100gr",3.99,"kazan","ja"))
+        ("gehakt","bio runder 500gr",3.99,"kazan","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 1200gr",3.99,"bas","ja"))
+        ("boter","bio gezouten 500gr",3.99,"bas","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 1300gr",3.50,"bas","ja"))
+        ("melk","bio runder 1 liter",3.50,"bas","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 4i1200gr",3.50,"bas","ja"))
+        ("karnemelk","bio runder 0,75l",3.50,"bas","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 1500gr",3.50,"kazan","ja"))
+        ("chips","bio pakrika 150gr",3.50,"shoppie","ja"))
     c.execute(
         "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 1600gr",3.50,"bas","ja"))
+        ("honing","bijen klaver 500gr",3.50,"shoppie","ja"))
     conn.commit()
 
 def delete_bulletin():
@@ -263,7 +256,7 @@ def display_menu():
     print("7. List Articles")
     print("8. Refresh Articles")
     print("9. List Orders")
-    print("10. Delete all Orders")
+    print("10. Refresh Orders")
     print("x. Exit")
 
 def display_banner():
@@ -320,7 +313,7 @@ def main():
         elif choice == '9':
             list_orders()
         elif choice == '10':
-            initialize_orders()
+            refresh_orders()
         elif choice == 'x':
             break
         else:
