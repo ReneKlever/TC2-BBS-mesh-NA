@@ -48,8 +48,55 @@ def initialize_database():
                     name TEXT NOT NULL,
                     url TEXT NOT NULL
                 );''')
+    c.execute('''CREATE TABLE IF NOT EXISTS articles (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    price NUMERIC(10,2) NOT NULL,
+                    supplier TEXT NOT NULL,
+                    available TEXT NOT NULL
+                );''')
+    c.execute('''CREATE TABLE IF NOT EXISTS orders (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_short_name TEXT NOT NULL,
+                    customer TEXT,
+                    article INTEGER,
+                    quantity INTEGER
+                );''')
     conn.commit()
     print("Database schema initialized.")
+
+def get_articles(supplier):
+    if supplier == "":
+        supplier = "%"
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, name, description, price FROM articles WHERE available LIKE 'ja' and supplier LIKE ? order by id asc",(supplier,))
+    return c.fetchall()
+
+def get_orders(sender_short_name,customer):
+    if sender_short_name == "":
+        sender_short_name = "%"
+    if customer == "":
+        customer = "%"
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT l.id, l.customer, l.article, r.name, r.description, l.quantity, r.price FROM orders l INNER JOIN articles r ON l.article = r.id WHERE l.sender_short_name LIKE ? AND l.customer LIKE ? order by l.id asc",(sender_short_name,customer,))
+    return c.fetchall()
+
+def add_order(sender_short_name,customer,article,quantity):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("INSERT OR REPLACE INTO orders (sender_short_name,customer,article,quantity) VALUES (?,?,?,?)", (sender_short_name,customer,article,quantity))
+    conn.commit()
+    return c.fetchall()
+
+def delete_order(customer,order):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM orders WHERE id = ? AND customer LIKE ?", (order,customer,))
+    conn.commit()
+    return c.fetchall()
 
 def add_channel(name, url, bbs_nodes=None, interface=None):
     conn = get_db_connection()
