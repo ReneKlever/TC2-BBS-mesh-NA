@@ -111,20 +111,22 @@ def initialize_config(config_file: str = None) -> dict[str, Any]:
     bbs_nodes = config.get('sync', 'bbs_nodes', fallback='').split(',')
     if bbs_nodes == ['']:
         bbs_nodes = []
-
     print(f"Configured to sync with the following BBS nodes: {bbs_nodes}")
 
     allowed2bbs_nodes = config.get('allow2bbs_list', 'allowed2bbs_nodes', fallback='').split(',')
     if allowed2bbs_nodes == ['']:
         allowed2bbs_nodes = []
-
     print(f"Nodes allowed to enter the BBS: {allowed2bbs_nodes}")
     
+    shopowner_nodes = config.get('shopowner_list', 'shopowner_nodes', fallback='').split(',')
+    if shopowner_nodes == ['']:
+        shopowner_nodes = []
+    print(f"Nodes allowed to enter the BBS: {shopowner_nodes}")
+
     allowed_nodes = config.get('allow_list', 'allowed_nodes', fallback='').split(',')
     if allowed_nodes == ['']:
         allowed_nodes = []
-
-    print(f"Nodes with Urgent board permissions: {allowed_nodes}")
+    print(f"Nodes with Urgent board and admin permissions: {allowed_nodes}")
 
     return {
         'config': config,
@@ -134,6 +136,7 @@ def initialize_config(config_file: str = None) -> dict[str, Any]:
         'bbs_nodes': bbs_nodes,
         'allowed_nodes': allowed_nodes,
         'allowed2bbs_nodes': allowed2bbs_nodes,
+        'shopowner_nodes': shopowner_nodes,
         'mqtt_topic': 'meshtastic.receive'
     }
 
