@@ -10,7 +10,9 @@ from command_handlers import (
     handle_check_bulletin_command, handle_read_bulletin_command, handle_read_channel_command,
     handle_post_channel_command, handle_list_channels_command, handle_quick_help_command,
     handle_shop_command,handle_list_articles_command, handle_list_orders_command, handle_add_order_command,
-    handle_delete_order_command
+    handle_delete_order_command, handle_owner_command, handle_owner_list_articles_command,
+    handle_list_customers_command, handle_customer_orders_command, handle_get_orders_per_supplier_command,
+    handle_shop_state_command, handle_edit_article_command, handle_delete_all_orders_command
 )
 from db_operations import add_bulletin, add_mail, delete_bulletin, delete_mail, get_db_connection, add_channel
 from js8call_integration import handle_js8call_command, handle_js8call_steps, handle_group_message_selection
@@ -20,6 +22,7 @@ main_menu_handlers = {
     "m": handle_mail_command,
     "b": handle_bulletin_command,
     "v": handle_shop_command,
+    "o": handle_owner_command,
     "c": handle_channel_directory_command,
     "u": lambda sender_id, interface: handle_help_command(sender_id, interface, 'utilities'),
     "q": handle_quick_help_command,
@@ -114,6 +117,20 @@ def process_message(sender_id, message, interface, is_sync_message=False):
             handle_add_order_command(sender_id, message_strip, interface)
         elif message_lower.startswith("bv"):
             handle_delete_order_command(sender_id, message_strip, interface)
+        elif message_lower.startswith("oa"):
+            handle_owner_list_articles_command(sender_id, message_strip, interface)
+        elif message_lower.startswith("oc"):
+            handle_list_customers_command(sender_id, interface)
+        elif message_lower.startswith("ob"):
+            handle_customer_orders_command(sender_id, message_strip, interface)
+        elif message_lower.startswith("ol"):
+            handle_get_orders_per_supplier_command(sender_id, message_strip, interface)
+        elif message_lower.startswith("ow"):
+            handle_shop_state_command(sender_id, message_strip, interface)
+        elif message_lower.startswith("od"):
+            handle_delete_all_orders_command(sender_id, message_strip, interface)
+        elif message_lower.startswith("oe"):
+            handle_edit_article_command(sender_id, message_strip, interface)
         else:
             if state and state['command'] == 'MENU':
                 menu_name = state['menu']
