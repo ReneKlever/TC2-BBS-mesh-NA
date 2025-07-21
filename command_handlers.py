@@ -10,7 +10,9 @@ from db_operations import (
     get_bulletin_content, get_bulletins, get_hot_bulletin,get_hot_bulletins, delete_bulletin,
     get_mail, get_mail_content,
     add_channel, get_channels, get_sender_id_by_mail_id,
-    get_articles, get_orders, add_order, delete_order
+    get_articles, get_article, get_set_article, get_orders, add_order, delete_order, get_customers,
+    get_orders_per_supplier, delete_all_orders, get_shop, set_shop, set_article_price, set_article_available,
+    delete_article, add_article
 )
 from utils import (
     get_node_id_from_num, get_node_info,
@@ -36,6 +38,8 @@ def build_menu(items, menu_name, mails, date):
             menu_str += "[B]ulletins (" + date + ")\n"
         elif item.strip() == 'V':
             menu_str += "[V]VoedselCoop\n"
+        elif item.strip() == 'O':
+            menu_str += "[O]ShopOwner\n"
         elif item.strip() == 'U':
             menu_str += "[U]tilities\n"
         elif item.strip() == 'X':
@@ -55,7 +59,25 @@ def build_menu(items, menu_name, mails, date):
     return menu_str
 
 def handle_shop_command(sender_id, interface):
-    response = "VoedselCoop NieuwAlphen\nDe winkel is open\n[LA]Lijst beschikbare artikelen\n[BA]Bestel artikelen\n[BL]Lijst bestelde artikelen\n[BV]Verwijder bestelling\n"
+    shopstate = "onbekend"
+    shops = get_shop()
+    if shops:
+        shopstate = shops[0][0]
+    response = "🥩VoedselCoop NieuwAlphen🍎\nDe winkel is " + shopstate + "\n[LA]Lijst beschikbare artikelen\n[BA]Bestel artikelen\n[BL]Lijst bestelde artikelen\n[BV]Verwijder bestelling"
+    send_message(response, sender_id, interface)
+
+def handle_owner_command(sender_id, interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit menu is alleen voor de shopowner", sender_id, interface)
+        return
+    shopstate = "onbekend"
+    shops = get_shop()
+    if shops:
+        shopstate = shops[0][0]
+    response = "🛒ShopOwner NieuwAlphen🛒\nDe winkel is " + shopstate + "\n[OA]Lijst artikelen\n[OC]Lijst klanten\n[OB]Orders per klant\n[OL]Orders per leverancier\n[OW]Winkel open/dicht\n[OD]Orders verwijderen\n[OE]Artikel aanpassen"
     send_message(response, sender_id, interface)
 
 def handle_list_articles_command(sender_id, interface):
@@ -72,7 +94,34 @@ def handle_list_articles_command(sender_id, interface):
                 cnt = 0
         if response:
             send_message(response, sender_id, interface)
-    handle_shop_command(sender_id, interface)
+
+def handle_owner_list_articles_command(sender_id, message_strip, interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    parts = message_strip.split(",,", 2)
+    if len(parts) != 2:
+        send_message("Gebruik: OA,,leverancier\nVoorbeeld:\nOA,,boerJan of OA,, voor alles", sender_id, interface)
+        return
+    customer = ""
+    if parts[1]:
+        customer = parts[1]
+    articles = get_articles(customer)
+    cnt = 0
+    response = ""
+    if articles:
+        for article in articles:
+            cnt = cnt + 1
+            response = response + f"[{article[0]}]: {article[1]} ({article[2]}) € {article[3]:5.2f} {article[4]} {article[5]}\n"
+            if cnt == 4:
+                send_message(response, sender_id, interface)
+                response = ""
+                cnt = 0
+        if response:
+            send_message(response, sender_id, interface)
 
 def handle_list_orders_command(sender_id, message_strip, interface):
     node_id = get_node_id_from_num(sender_id, interface)
@@ -82,33 +131,86 @@ def handle_list_orders_command(sender_id, message_strip, interface):
        update_user_state(sender_id, None)
        return 
     sender_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
-    logging.info(sender_short_name)
     parts = message_strip.split(",,", 4)
+    logging.info(len(parts))
     if len(parts) > 1:
-        customer = parts[1]
+        if parts[1]:
+            customer = parts[1]
+            sender_short_name = ""
+        else:
+            customer = ""
     else:
         customer = ""
     orders = get_orders(sender_short_name,customer)
-    logging.info({orders[0]})
     cnt = 0
     totalprice = 0
-    response = "Bestelling voor " + sender_short_name + " " + customer + "\n"
+    response = "Bestelling voor " + sender_short_name + customer + "\n"
     if orders:
         for order in orders:
             cnt = cnt + 1
-            itemprice = order[5] * order[6]
+            itemprice = order[6] * order[7]
             totalprice = totalprice + itemprice
-            response = response + f"[{order[0]}]:{order[1]} {order[5]} x {order[2]} ({order[3]}) €  {itemprice:5.2f}\n"
+            response = response + f"[{order[0]}] {order[2]} via {order[1]}: {order[6]} x {order[3]} ({order[4]}) €  {itemprice:5.2f}\n"
+            if cnt == 3:
+                send_message(response, sender_id, interface)
+                response = ""
+                cnt = 0
+        response = response + f"{len(orders)} bestellingen: totaal ongeveer €  {totalprice:5.2f}"
+        if response:
+            send_message(response, sender_id, interface)
+    else:
+        response = "No orders found for this node"
+        send_message(response, sender_id, interface)
+
+def handle_customer_orders_command(sender_id, message_strip, interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    node_info = interface.nodes.get(node_id)
+    if node_info is None:
+       send_message("Error: Unable to retrieve your node information.", sender_id, interface)
+       update_user_state(sender_id, None)
+       return
+    sender_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
+    parts = message_strip.split(",,", 4)
+    if len(parts) > 1:
+        customer = parts[1]
+        extratext = " voor "
+    else:
+        customer = ""
+        extratext = " alle klanten"
+    orders = get_orders("",customer)
+    cnt = 0
+    totalprice = 0
+    response = "Bestelling" + extratext + customer + "\n"
+    if orders:
+        for order in orders:
+            cnt = cnt + 1
+            itemprice = order[6] * order[7]
+            totalprice = totalprice + itemprice
+            response = response + f"[{order[0]}] {order[2]} via {order[1]}: {order[6]} x {order[3]} ({order[4]}) €  {itemprice:5.2f}\n"
             if cnt == 4:
                 send_message(response, sender_id, interface)
                 response = ""
                 cnt = 0
-        response = response + f"Totaal ongeveer €  {totalprice:5.2f}"
+        response = response + f"{len(orders)} bestellingen: totaal €  {totalprice:5.2f}"
         if response:
             send_message(response, sender_id, interface)
-    handle_shop_command(sender_id, interface)
+    else:
+        response = "No orders found for this node"
+        send_message(response, sender_id, interface)
 
 def handle_add_order_command(sender_id,message_strip,interface):
+    shopstate = "onbekend"
+    shops = get_shop()
+    if shops:
+        shopstate = shops[0][0]
+    if shopstate != "open":
+       send_message("Helaas, de winkel is dicht", sender_id, interface)
+       return
     parts = message_strip.split(",,", 4)
     if len(parts) != 3:
         send_message("Bestel artikelen als volgt:\nBA,,klantnaam,,aantal x artikel(,aantal x artikel,..)\nVoorbeeld:\nBA,,Rene,,1x22,3x34", sender_id, interface)
@@ -124,10 +226,23 @@ def handle_add_order_command(sender_id,message_strip,interface):
     for order in orders:
         (quantity, article) = order.split("x", 1)
         logging.info({article})
-        add_order(sender_short_name, parts[1], article, quantity)
+        articlecheck = get_article(article)
+        if len(articlecheck) != 1:
+           logging.info("ik ben hier")
+           response = "Fout: Kan artikel " + str(article) + " niet vinden"
+           send_message(response, sender_id, interface)
+        else:
+            add_order(sender_short_name, parts[1], article, quantity)
     handle_list_orders_command(sender_id, "bl,," + parts[1], interface)
 
 def handle_delete_order_command(sender_id,message_strip,interface):
+    shopstate = "onbekend"
+    shops = get_shop()
+    if shops:
+        shopstate = shops[0][0]
+    if shopstate != "open":
+       send_message("Helaas, de winkel is dicht", sender_id, interface)
+       return
     parts = message_strip.split(",,", 4)
     if len(parts) != 3:
         send_message("Verwijder bestelling als volgt:\nBV,,klantnaam,,ordernummer", sender_id, interface)
@@ -141,6 +256,161 @@ def handle_delete_order_command(sender_id,message_strip,interface):
     sender_short_name = node_info['user'].get('shortName', f"Node {sender_id}")
     delete_order(parts[1], parts[2])
     handle_list_orders_command(sender_id, "bl,," + parts[1], interface)
+
+def handle_list_customers_command(sender_id, interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    customers = get_customers()
+    cnt = 0
+    response = "Deze klanten hebben al besteld:\n"
+    if customers:
+        for customer in customers:
+            response = response + f"{customer[0]}, "
+    else:
+        response = "Geen klanten gevonden"
+    send_message(response, sender_id, interface)
+    handle_owner_command(sender_id, interface)
+
+def handle_get_orders_per_supplier_command(sender_id,message_strip,interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    node_info = interface.nodes.get(node_id)
+    if node_info is None:
+       send_message("Error: Unable to retrieve your node information.", sender_id, interface)
+       update_user_state(sender_id, None)
+       return
+    parts = message_strip.split(",,", 2)
+    if len(parts) != 2:
+        send_message("Gebruik: OL,,leverancier\nVoorbeeld:\nOL,,boerJan", sender_id, interface)
+        return
+    else:
+        supplier = parts[1]
+    orders = get_orders_per_supplier(supplier)
+    cnt = 0
+    totalprice = 0
+    response = "Bestelling voor "  + supplier + "\n"
+    if orders:
+        for order in orders:
+            cnt = cnt + 1
+            itemprice = order[1] * order[4]
+            totalprice = totalprice + itemprice
+            response = response + f"{order[1]} x [{order[0]}] {order[2]} a {order[4]} = € {itemprice:.2f}\n"
+            if cnt == 4:
+                send_message(response, sender_id, interface)
+                response = ""
+                cnt = 0
+        response = response + f"{len(orders)} bestellingen: totaal € {totalprice:.2f}"
+        if response:
+            send_message(response, sender_id, interface)
+    else:
+        response = "No orders found for this node"
+        send_message(response, sender_id, interface)
+
+def handle_shop_state_command(sender_id,message_strip,interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    parts = message_strip.split(",,", 2)
+    response = ""
+    if len(parts) != 2:
+        response = response + "Gebruik als volgt: OW,,open/dicht\n"
+    else:
+        set_shop(parts[1])
+    shops = get_shop()
+    if shops:
+        response = response + f"De winkel is nu {shops[0][0]}"
+    send_message(response, sender_id, interface)
+    handle_owner_command(sender_id, interface)
+
+def handle_edit_article_command(sender_id,message_strip,interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    parts = message_strip.split(",,", 8)
+    usage = "Artikel aanpassen als volgt:\nBeschikbaar: OE,,A,,artnr,,ja/nee\nPrijs: OE,,P,,artnr,,prijs\nVerwijderen: OE,,D,,artnr\nToevoegen: OE,,I,,naam,,beschrijving,,prijs,,leverancier,,beschikbaar"
+    if len(parts) < 3:
+        send_message(usage, sender_id, interface)
+        return
+    if parts[1].lower() == "a":
+        shops = get_shop()
+        logging.info(shops[0][0])
+        if shops[0][0] == "open":
+            response = "Je kunt dit alleen doen als de winkel gesloten is"
+            send_message(response, sender_id, interface)
+            return
+        if parts[3] not in ['ja','nee']:
+            send_message(usage, sender_id, interface)
+            return
+        else:
+            set_article_available(parts[2],parts[3])
+            article = get_set_article(parts[2])
+            response = f"[{article[0][0]}]: {article[0][1]} ({article[0][2]}) € {article[0][3]:5.2f} {article[0][4]} {article[0][5]}"
+            send_message(response, sender_id, interface)
+    if parts[1].lower() == "p":
+        shops = get_shop()
+        logging.info(shops[0][0])
+        if shops[0][0] == "open":
+            response = "Je kunt dit alleen doen als de winkel gesloten is"
+            send_message(response, sender_id, interface)
+            return
+        set_article_price(parts[2],parts[3])
+        article = get_set_article(parts[2])
+        response = f"[{article[0][0]}]: {article[0][1]} ({article[0][2]}) € {article[0][3]:5.2f} {article[0][4]} {article[0][5]}"
+        send_message(response, sender_id, interface)
+    if parts[1].lower() == "d":
+        shops = get_shop()
+        logging.info(shops[0][0])
+        if shops[0][0] == "open":
+            response = "Je kunt dit alleen doen als de winkel gesloten is"
+            send_message(response, sender_id, interface)
+            return
+        delete_article(parts[2])
+        reponse = "Artikel " + str(parts[2]) + " verwijderd"
+        send_message(response, sender_id, interface)
+    if parts[1].lower() == "i":
+        if len(parts) != 7:
+            send_message(usage, sender_id, interface)
+            return
+        add_article(parts[2],parts[3],parts[4],parts[5],parts[6])
+        response = "Artikel " + str(parts[2]) + " toegevoegd"
+        send_message(response, sender_id, interface)
+
+def handle_delete_all_orders_command(sender_id, message_strip, interface):
+    node_id = get_node_id_from_num(sender_id, interface)
+    shopowner_nodes = interface.shopowner_nodes
+    if shopowner_nodes and node_id not in shopowner_nodes:
+        logging.info(f"Node node_id: {node_id} is not shopowner")
+        send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
+        return
+    parts = message_strip.split(",,", 2)
+    usage = "Doe dit alleen als de winkel gesloten is. Het is onherroepelijk, de orders zijn dan echt weg!\nGebruik als volgt: OD,,##IkWeetHetZeker##!"
+    shops = get_shop()
+    if shops[0][0] == "open":
+        send_message(usage, sender_id, interface)
+        return
+    if len(parts) != 2:
+        send_message(usage, sender_id, interface)
+        return
+    if parts[1] != "##IkWeetHetZeker##!":
+        logging.info("hier ben ik")
+        send_message(usage, sender_id, interface)
+        return
+    delete_all_orders()
+    send_message("Alle bestellingen zijn verwijderd!", sender_id, interface)
 
 def handle_help_command(sender_id, interface, menu_name=None):
     if menu_name:
