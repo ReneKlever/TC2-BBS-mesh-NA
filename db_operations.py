@@ -64,6 +64,15 @@ def initialize_database():
                     quantity INTEGER
                 );''')
     conn.commit()
+    c.execute('''DROP INDEX order_idx;''')
+    c.execute('''CREATE UNIQUE INDEX order_idx ON orders(sender_short_name,customer,article);''')
+    conn.commit()
+    c.execute('''CREATE TABLE IF NOT EXISTS shop (
+                    mykey TEXT PRIMARY KEY,
+                    myvalue TEXT NOT NULL
+                );''')
+    conn.commit()
+
     print("Database schema initialized.")
 
 def get_articles(supplier):
@@ -71,7 +80,47 @@ def get_articles(supplier):
         supplier = "%"
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, name, description, price FROM articles WHERE available LIKE 'ja' and supplier LIKE ? order by id asc",(supplier,))
+    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE available LIKE 'ja' and supplier LIKE ? order by id asc",(supplier,))
+    return c.fetchall()
+
+def get_article(id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE available LIKE 'ja' AND id = ?",(id,))
+    return c.fetchall()
+
+def delete_article(id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM articles WHERE id = ?",(id,))
+    conn.commit()
+    return c.fetchall()
+
+def get_set_article(id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE id = ?",(id,))
+    return c.fetchall()
+
+def set_article_price(id,price):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("UPDATE articles SET price = ? WHERE id = ?",(price,id,))
+    conn.commit()
+    return c.fetchall()
+
+def set_article_available(id,available):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("UPDATE articles SET available = ? WHERE id = ?",(available,id,))
+    conn.commit()
+    return c.fetchall()
+
+def add_article(name,description,price,supplier,available):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("INSERT INTO articles (name,description,price,supplier,available) VALUES (?,?,?,?,?)", (name,description,price,supplier,available))
+    conn.commit()
     return c.fetchall()
 
 def get_orders(sender_short_name,customer):
@@ -81,7 +130,15 @@ def get_orders(sender_short_name,customer):
         customer = "%"
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT l.id, l.customer, l.article, r.name, r.description, l.quantity, r.price FROM orders l INNER JOIN articles r ON l.article = r.id WHERE l.sender_short_name LIKE ? AND l.customer LIKE ? order by l.id asc",(sender_short_name,customer,))
+    c.execute("SELECT l.id, l.sender_short_name, l.customer, l.article, r.name, r.description, l.quantity, r.price FROM orders l INNER JOIN articles r ON l.article = r.id WHERE l.sender_short_name LIKE ? AND l.customer LIKE ? order by l.id asc",(sender_short_name,customer,))
+    return c.fetchall()
+
+def get_orders_per_supplier(supplier):
+    if supplier == "":
+        supplier = "%"
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT article, SUM(quantity), name, description, price, supplier FROM orders INNER JOIN articles  ON orders.article = articles.id WHERE supplier LIKE ? GROUP BY supplier,article",(supplier,))
     return c.fetchall()
 
 def add_order(sender_short_name,customer,article,quantity):
@@ -95,6 +152,33 @@ def delete_order(customer,order):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("DELETE FROM orders WHERE id = ? AND customer LIKE ?", (order,customer,))
+    conn.commit()
+    return c.fetchall()
+
+def get_customers():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT lower(customer) FROM orders")
+    return c.fetchall()
+
+def delete_all_orders():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM orders")
+    c.execute("UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='orders'")
+    conn.commit()
+    return c.fetchall()
+
+def get_shop():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT myvalue FROM shop WHERE mykey LIKE 'shopstate'")
+    return c.fetchall()
+
+def set_shop(shopstate):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("INSERT OR REPLACE INTO shop (mykey, myvalue) VALUES ('shopstate', ?)", (shopstate,))
     conn.commit()
     return c.fetchall()
 
