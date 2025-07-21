@@ -70,6 +70,12 @@ def refresh_orders():
     c.execute(
         "INSERT INTO orders (sender_short_name, customer, article, quantity) VALUES (?, ?, ?, ?)",
         ("REN1","Rene",10,1))
+    c.execute(
+        "INSERT INTO orders (sender_short_name, customer, article, quantity) VALUES (?, ?, ?, ?)",
+        ("RENM","Rene",11,2))
+    c.execute(
+        "INSERT INTO orders (sender_short_name, customer, article, quantity) VALUES (?, ?, ?, ?)",
+        ("RENM","Ralphie",10,1))
     conn.commit()
 
 def list_bulletins():
