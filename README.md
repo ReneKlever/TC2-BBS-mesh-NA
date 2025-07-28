@@ -14,7 +14,7 @@ In comparison with the original this version is enhanced:
 - Users can only delete their own bulletins
 - The allowed_nodes list is also used for administrative access
 - Nodes with administrative access can also delete bulletins from others
-- # Shop implementation for buying and selling food
+- ## Includes a basic Shop Implementation for buying and selling food
 
 
 ## Setup
