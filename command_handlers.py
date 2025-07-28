@@ -12,7 +12,7 @@ from db_operations import (
     add_channel, get_channels, get_sender_id_by_mail_id,
     get_articles, get_article, get_set_article, get_orders, add_order, delete_order, get_customers,
     get_orders_per_supplier, delete_all_orders, get_shop, set_shop, set_article_price, set_article_available,
-    delete_article, add_article
+    delete_article, add_article, set_supplier_available, get_supplier_articles
 )
 from utils import (
     get_node_id_from_num, get_node_info,
@@ -70,7 +70,7 @@ def handle_owner_command(sender_id, interface):
     node_id = get_node_id_from_num(sender_id, interface)
     shopowner_nodes = interface.shopowner_nodes
     if shopowner_nodes and node_id not in shopowner_nodes:
-        logging.info(f"Node node_id: {node_id} is not shopowner")
+        logging.info(f"Node node_id: {node_id} is no shopowner")
         send_message("Dit menu is alleen voor de shopowner", sender_id, interface)
         return
     shopstate = "onbekend"
@@ -81,7 +81,7 @@ def handle_owner_command(sender_id, interface):
     send_message(response, sender_id, interface)
 
 def handle_list_articles_command(sender_id, interface):
-    articles = get_articles("")
+    articles = get_articles()
     cnt = 0
     response = ""
     if articles:
@@ -106,17 +106,17 @@ def handle_owner_list_articles_command(sender_id, message_strip, interface):
     if len(parts) != 2:
         send_message("Gebruik: OA,,leverancier\nVoorbeeld:\nOA,,boerJan of OA,, voor alles", sender_id, interface)
         return
-    customer = ""
+    supplier = ""
     if parts[1]:
-        customer = parts[1]
-    articles = get_articles(customer)
+        supplier = parts[1]
+    articles = get_supplier_articles(supplier)
     cnt = 0
     response = ""
     if articles:
         for article in articles:
             cnt = cnt + 1
-            response = response + f"[{article[0]}]: {article[1]} ({article[2]}) € {article[3]:5.2f} {article[4]} {article[5]}\n"
-            if cnt == 4:
+            response = response + f"[{article[0]}]: {article[1]} ({article[2]}) € {article[6]:5.2f}/{article[3]:5.2f} {article[4]} {article[5]}\n"
+            if cnt == 3:
                 send_message(response, sender_id, interface)
                 response = ""
                 cnt = 0
@@ -159,7 +159,7 @@ def handle_list_orders_command(sender_id, message_strip, interface):
         if response:
             send_message(response, sender_id, interface)
     else:
-        response = "No orders found for this node"
+        response = "Geen bestellingen gevonden"
         send_message(response, sender_id, interface)
 
 def handle_customer_orders_command(sender_id, message_strip, interface):
@@ -200,7 +200,7 @@ def handle_customer_orders_command(sender_id, message_strip, interface):
         if response:
             send_message(response, sender_id, interface)
     else:
-        response = "No orders found for this node"
+        response = "Geen bestellingen gevonden"
         send_message(response, sender_id, interface)
 
 def handle_add_order_command(sender_id,message_strip,interface):
@@ -225,10 +225,8 @@ def handle_add_order_command(sender_id,message_strip,interface):
     orders = parts[2].split(",", -1)
     for order in orders:
         (quantity, article) = order.split("x", 1)
-        logging.info({article})
         articlecheck = get_article(article)
         if len(articlecheck) != 1:
-           logging.info("ik ben hier")
            response = "Fout: Kan artikel " + str(article) + " niet vinden"
            send_message(response, sender_id, interface)
         else:
@@ -295,6 +293,7 @@ def handle_get_orders_per_supplier_command(sender_id,message_strip,interface):
         supplier = parts[1]
     orders = get_orders_per_supplier(supplier)
     cnt = 0
+    purchaseprice= 0
     totalprice = 0
     response = "Bestelling voor "  + supplier + "\n"
     if orders:
@@ -302,16 +301,18 @@ def handle_get_orders_per_supplier_command(sender_id,message_strip,interface):
             cnt = cnt + 1
             itemprice = order[1] * order[4]
             totalprice = totalprice + itemprice
-            response = response + f"{order[1]} x [{order[0]}] {order[2]} a {order[4]} = € {itemprice:.2f}\n"
-            if cnt == 4:
+            purcprice = order[1] * order[6]
+            purchaseprice = purchaseprice + purcprice
+            response = response + f"{order[1]} x [{order[0]}] {order[2]} a € {order[6]}/{order[4]} = € {purcprice:.2f}/{itemprice:.2f}\n"
+            if cnt == 3:
                 send_message(response, sender_id, interface)
                 response = ""
                 cnt = 0
-        response = response + f"{len(orders)} bestellingen: totaal € {totalprice:.2f}"
+        response = response + f"{len(orders)} bestellingen: totaal inkoop/verkoop € {purchaseprice:.2f}/{totalprice:.2f}"
         if response:
             send_message(response, sender_id, interface)
     else:
-        response = "No orders found for this node"
+        response = "Geen bestellingen gevonden"
         send_message(response, sender_id, interface)
 
 def handle_shop_state_command(sender_id,message_strip,interface):
@@ -341,13 +342,12 @@ def handle_edit_article_command(sender_id,message_strip,interface):
         send_message("Dit commando is alleen voor de shopowner", sender_id, interface)
         return
     parts = message_strip.split(",,", 8)
-    usage = "Artikel aanpassen als volgt:\nBeschikbaar: OE,,A,,artnr,,ja/nee\nPrijs: OE,,P,,artnr,,prijs\nVerwijderen: OE,,D,,artnr\nToevoegen: OE,,I,,naam,,beschrijving,,prijs,,leverancier,,beschikbaar"
+    usage = "Article avail: OE,,A,,artnr,,ja/nee\nSupplier avail: OE,,S,,supplier,,ja/nee\nSet price: OE,,P,,artnr,,purch/sale\nDelete art: OE,,D,,artnr\nAdd art: OE,,I,,name,,description,,purch/sale,,supplier,,ja/nee"
     if len(parts) < 3:
         send_message(usage, sender_id, interface)
         return
     if parts[1].lower() == "a":
         shops = get_shop()
-        logging.info(shops[0][0])
         if shops[0][0] == "open":
             response = "Je kunt dit alleen doen als de winkel gesloten is"
             send_message(response, sender_id, interface)
@@ -358,22 +358,34 @@ def handle_edit_article_command(sender_id,message_strip,interface):
         else:
             set_article_available(parts[2],parts[3])
             article = get_set_article(parts[2])
-            response = f"[{article[0][0]}]: {article[0][1]} ({article[0][2]}) € {article[0][3]:5.2f} {article[0][4]} {article[0][5]}"
+            response = f"[{article[0][0]}]: {article[0][1]} ({article[0][2]}) € {article[0][6]:5.2f}/{article[0][3]} {article[0][4]} {article[0][5]}"
             send_message(response, sender_id, interface)
-    if parts[1].lower() == "p":
+    if parts[1].lower() == "s":
         shops = get_shop()
-        logging.info(shops[0][0])
         if shops[0][0] == "open":
             response = "Je kunt dit alleen doen als de winkel gesloten is"
             send_message(response, sender_id, interface)
             return
-        set_article_price(parts[2],parts[3])
+        if parts[3] not in ['ja','nee']:
+            send_message(usage, sender_id, interface)
+            return
+        else:
+            set_supplier_available(parts[2],parts[3])
+            response = f"Alle artikelen van {parts[2]} aangepast"
+            send_message(response, sender_id, interface)
+    if parts[1].lower() == "p":
+        shops = get_shop()
+        if shops[0][0] == "open":
+            response = "Je kunt dit alleen doen als de winkel gesloten is"
+            send_message(response, sender_id, interface)
+            return
+        prices = parts[3].split("/", 2)
+        set_article_price(parts[2],prices[1],prices[0])
         article = get_set_article(parts[2])
-        response = f"[{article[0][0]}]: {article[0][1]} ({article[0][2]}) € {article[0][3]:5.2f} {article[0][4]} {article[0][5]}"
+        response = f"[{article[0][0]}]: {article[0][1]} ({article[0][2]}) € {article[0][6]:5.2f}/{article[0][3]:5.2f} {article[0][4]} {article[0][5]}"
         send_message(response, sender_id, interface)
     if parts[1].lower() == "d":
         shops = get_shop()
-        logging.info(shops[0][0])
         if shops[0][0] == "open":
             response = "Je kunt dit alleen doen als de winkel gesloten is"
             send_message(response, sender_id, interface)
@@ -385,7 +397,8 @@ def handle_edit_article_command(sender_id,message_strip,interface):
         if len(parts) != 7:
             send_message(usage, sender_id, interface)
             return
-        add_article(parts[2],parts[3],parts[4],parts[5],parts[6])
+        prices = parts[4].split("/", 2)
+        add_article(parts[2],parts[3],prices[1],parts[5],parts[6],prices[0])
         response = "Artikel " + str(parts[2]) + " toegevoegd"
         send_message(response, sender_id, interface)
 
@@ -754,7 +767,7 @@ def handle_wall_of_shame_command(sender_id, interface):
 
 
 def handle_channel_directory_command(sender_id, interface):
-    response = "📚CHANNEL DIRECTORY📚\nWhat would you like to do?\n[V]iew  [P]ost  E[X]IT"
+    response = "📚CHANNEL DIRECTORY📚\nWhat would you like to do?\n[L]ist  [P]ost  E[X]IT"
     send_message(response, sender_id, interface)
     update_user_state(sender_id, {'command': 'CHANNEL_DIRECTORY', 'step': 1})
 
@@ -769,7 +782,7 @@ def handle_channel_directory_steps(sender_id, message, step, state, interface):
         if choice.lower() == 'x':
             handle_help_command(sender_id, interface)
             return
-        elif choice.lower() == 'v':
+        elif choice.lower() == 'l':
             channels = get_channels()
             if channels:
                 response = "Select a channel number to view:\n" + "\n".join(
