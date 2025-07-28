@@ -36,11 +36,14 @@ def initialize_database():
                     name TEXT NOT NULL,
                     url TEXT NOT NULL
                 );''')
+#    c.execute('''DROP TABLE articles;''')
+#    conn.commit()
     c.execute('''CREATE TABLE IF NOT EXISTS articles (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     description TEXT,
                     price NUMERIC(10,2) NOT NULL,
+                    purchase NUMERIC(10,2) NOT NULL,
                     supplier TEXT NOT NULL,
                     available TEXT NOT NULL
                 );''')
@@ -123,12 +126,12 @@ def list_channels():
 def list_articles():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, name, description, price, supplier, available FROM articles")
+    c.execute("SELECT id, name, description, price, purchase, supplier, available FROM articles")
     articles = c.fetchall()
     if articles:
         print_bold("Articles:")
         for article in articles:
-            print_bold(f"(ID: {article[0]}, Name: {article[1]}, Description: {article[2]}, Price: {article[3]}, Supplier: {article[4]}, Available: {article[5]})")
+            print_bold(f"(ID: {article[0]}, Name: {article[1]}, Description: {article[2]}, Price: {article[3]}, Purchase: {article[4]}, Supplier: {article[5]}, Available: {article[6]})")
     else:
         print_bold("No articles found.")
     print_separator()
@@ -154,53 +157,53 @@ def refresh_articles():
     c.execute("DELETE FROM articles")
     c.execute("UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='articles'")
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("worst","bio runder 100gr",3.00,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("worst","bio rund 100gr",3.00,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("braadworst","bio runder 200gr",3.50,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("braadworst","bio rund 200gr",3.50,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("knakworst","bio runder 4 stuks",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("knakworst","bio rund 4 stuks",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("biefstuk","bio runder 400gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("biefstuk","bio rund 400gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("beenham","bio plakjes 200gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("beenham","bio plakjes 200gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("entrecote","bio runder 600gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("entrecote","bio rund 600gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("stoofvlees","bio runder 700gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("stoofvlees","bio rund 700gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("ossenworst","bio runder",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("ossenworst","bio rund",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("ontbijtspek","bio 200gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("ontbijtspek","bio 200gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("gehakt","bio runder 300gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("gehakt","bio rund 300gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("gehakt","bio runder 500gr",3.99,"kazan","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("gehakt","bio rund 500gr",3.99,2.00,"kazan","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("boter","bio gezouten 500gr",3.99,"bas","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("boter","bio gezouten 500gr",3.99,2.00,"bas","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("melk","bio runder 1 liter",3.50,"bas","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("melk","bio rund 1 liter",3.50,2.00,"bas","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("karnemelk","bio runder 0,75l",3.50,"bas","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("karnemelk","bio rund 0,75l",3.50,2.00,"bas","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("chips","bio pakrika 150gr",3.50,"shoppie","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("chips","bio pakrika 150gr",3.50,2.00,"shoppie","ja"))
     c.execute(
-        "INSERT INTO articles (name, description, price, supplier, available) VALUES (?, ?, ?, ?, ?)",
-        ("honing","bijen klaver 500gr",3.50,"shoppie","ja"))
+        "INSERT INTO articles (name, description, price, purchase, supplier, available) VALUES (?, ?, ?, ?, ?, ?)",
+        ("honing","klaver 500gr",3.50,2.00,"shoppie","ja"))
     conn.commit()
 
 def delete_bulletin():
