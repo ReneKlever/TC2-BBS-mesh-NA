@@ -1,4 +1,4 @@
-# TC²-BBS Meshtastic Version enhanced by Rene
+# TC²-BBS Meshtastic Version - Shop Version
 
 This is the TC²-BBS system integrated with Meshtastic devices. The system allows for message handling, bulletin boards, mail systems, and a channel directory.
 In comparison with the original this version is enhanced:
@@ -14,7 +14,7 @@ In comparison with the original this version is enhanced:
 - Users can only delete their own bulletins
 - The allowed_nodes list is also used for administrative access
 - Nodes with administrative access can also delete bulletins from others
-
+- # Shop implementation for buying and selling food
 
 
 ## Setup
