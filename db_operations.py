@@ -53,6 +53,7 @@ def initialize_database():
                     name TEXT NOT NULL,
                     description TEXT,
                     price NUMERIC(10,2) NOT NULL,
+                    purchase NUMERIC(10,2) NOT NULL,
                     supplier TEXT NOT NULL,
                     available TEXT NOT NULL
                 );''')
@@ -75,18 +76,24 @@ def initialize_database():
 
     print("Database schema initialized.")
 
-def get_articles(supplier):
+def get_articles():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE available LIKE 'ja' order by id asc")
+    return c.fetchall()
+
+def get_supplier_articles(supplier):
     if supplier == "":
         supplier = "%"
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE available LIKE 'ja' and supplier LIKE ? order by id asc",(supplier,))
+    c.execute("SELECT id, name, description, price, supplier, available, purchase FROM articles WHERE supplier LIKE ? order by id asc",(supplier,))
     return c.fetchall()
 
 def get_article(id):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE available LIKE 'ja' AND id = ?",(id,))
+    c.execute("SELECT id, name, description, price, supplier, available, purchase FROM articles WHERE available LIKE 'ja' AND id = ?",(id,))
     return c.fetchall()
 
 def delete_article(id):
@@ -99,13 +106,13 @@ def delete_article(id):
 def get_set_article(id):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, name, description, price, supplier, available FROM articles WHERE id = ?",(id,))
+    c.execute("SELECT id, name, description, price, supplier, available, purchase FROM articles WHERE id = ?",(id,))
     return c.fetchall()
 
-def set_article_price(id,price):
+def set_article_price(id,price,purchase):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("UPDATE articles SET price = ? WHERE id = ?",(price,id,))
+    c.execute("UPDATE articles SET price = ?, purchase = ? WHERE id = ?",(price,purchase,id,))
     conn.commit()
     return c.fetchall()
 
@@ -116,10 +123,17 @@ def set_article_available(id,available):
     conn.commit()
     return c.fetchall()
 
-def add_article(name,description,price,supplier,available):
+def set_supplier_available(supplier,available):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("INSERT INTO articles (name,description,price,supplier,available) VALUES (?,?,?,?,?)", (name,description,price,supplier,available))
+    c.execute("UPDATE articles SET available = ? WHERE supplier = ?",(available,supplier,))
+    conn.commit()
+    return c.fetchall()
+
+def add_article(name,description,price,supplier,available,purchase):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("INSERT INTO articles (name,description,price,supplier,available,purchase) VALUES (?,?,?,?,?,?)", (name,description,price,supplier,available,purchase))
     conn.commit()
     return c.fetchall()
 
@@ -138,7 +152,7 @@ def get_orders_per_supplier(supplier):
         supplier = "%"
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT article, SUM(quantity), name, description, price, supplier FROM orders INNER JOIN articles  ON orders.article = articles.id WHERE supplier LIKE ? GROUP BY supplier,article",(supplier,))
+    c.execute("SELECT article, SUM(quantity), name, description, price, supplier, purchase FROM orders INNER JOIN articles  ON orders.article = articles.id WHERE supplier LIKE ? GROUP BY supplier,article",(supplier,))
     return c.fetchall()
 
 def add_order(sender_short_name,customer,article,quantity):
